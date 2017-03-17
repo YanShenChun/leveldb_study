@@ -41,6 +41,8 @@ class FilterBlockBuilder {
   std::string keys_;              // Flattened key contents
   std::vector<size_t> start_;     // Starting index in keys_ of each key
   std::string result_;            // Filter data computed so far
+
+  // TED: is it necessary put tmp_keys_ in class field??
   std::vector<Slice> tmp_keys_;   // policy_->CreateFilter() argument
   std::vector<uint32_t> filter_offsets_;
 

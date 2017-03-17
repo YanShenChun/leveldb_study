@@ -100,6 +100,8 @@ Status ReadBlock(RandomAccessFile* file,
   switch (data[n]) {
     case kNoCompression:
       if (data != buf) {
+        // TED: take care this!!
+
         // File implementation gave us pointer to some other data.
         // Use it directly under the assumption that it will be live
         // while the file is open.

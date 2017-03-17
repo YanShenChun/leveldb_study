@@ -57,6 +57,8 @@ Status Table::Open(const Options& options,
   // Read the index block
   BlockContents contents;
   Block* index_block = NULL;
+
+  // TED: the 'if' is redundant or just looks beautiful??
   if (s.ok()) {
     ReadOptions opt;
     if (options.paranoid_checks) {

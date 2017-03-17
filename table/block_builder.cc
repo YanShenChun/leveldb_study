@@ -75,7 +75,7 @@ void BlockBuilder::Add(const Slice& key, const Slice& value) {
   assert(!finished_);
   assert(counter_ <= options_->block_restart_interval);
   assert(buffer_.empty() // No values yet?
-         || options_->comparator->Compare(key, last_key_piece) > 0);
+         || options_->comparator->Compare(key, last_key_piece) > 0); // TED: must be ascending sort??
   size_t shared = 0;
   if (counter_ < options_->block_restart_interval) {
     // See how much sharing to do with previous string
@@ -100,6 +100,8 @@ void BlockBuilder::Add(const Slice& key, const Slice& value) {
   buffer_.append(value.data(), value.size());
 
   // Update state
+  // TED:
+  // why not directly use "last_key_ = key" ???
   last_key_.resize(shared);
   last_key_.append(key.data() + shared, non_shared);
   assert(Slice(last_key_) == key);

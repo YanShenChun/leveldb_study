@@ -97,6 +97,7 @@ class VersionEdit {
   bool has_next_file_number_;
   bool has_last_sequence_;
 
+  // TED:: why compact_pointers_ and new_files no use typedef like deleted_files_.
   std::vector< std::pair<int, InternalKey> > compact_pointers_;
   DeletedFileSet deleted_files_;
   std::vector< std::pair<int, FileMetaData> > new_files_;

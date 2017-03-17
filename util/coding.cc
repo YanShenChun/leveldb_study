@@ -6,6 +6,10 @@
 
 namespace leveldb {
 
+// TED::如果系统本身就是little endian,直接用memcpy.
+// TED:: memcpy本身实现依赖于系统字节序？？
+// TED::否则手动little endian 赋值
+// TED:: why not use loop??
 void EncodeFixed32(char* buf, uint32_t value) {
   if (port::kLittleEndian) {
     memcpy(buf, &value, sizeof(value));
@@ -44,6 +48,8 @@ void PutFixed64(std::string* dst, uint64_t value) {
   dst->append(buf, sizeof(buf));
 }
 
+// TED:: 将输入整形数据，按7位进行分割。7位一组。除了最后一组，前面的组最高位都设置为1.
+// TED:: why not use loop to split?? performance??
 char* EncodeVarint32(char* dst, uint32_t v) {
   // Operate on characters as unsigneds
   unsigned char* ptr = reinterpret_cast<unsigned char*>(dst);
@@ -73,33 +79,45 @@ char* EncodeVarint32(char* dst, uint32_t v) {
 }
 
 void PutVarint32(std::string* dst, uint32_t v) {
+  // TED:: 32bit/7bit ~= 4.57
   char buf[5];
   char* ptr = EncodeVarint32(buf, v);
   dst->append(buf, ptr - buf);
 }
 
+
+// TED:: 同EncodeVarint32，但是使用了循环，简洁。
+// TED:: 注意reinterpret_cast和static_cast的使用
 char* EncodeVarint64(char* dst, uint64_t v) {
   static const int B = 128;
   unsigned char* ptr = reinterpret_cast<unsigned char*>(dst);
+
+  // TED:: 只要>=1000_0000(2^7=128)说明超过7位，可继续拆分。
   while (v >= B) {
     *(ptr++) = (v & (B-1)) | B;
     v >>= 7;
   }
+
+  // TED:: 不要忘了还剩下一个7位
   *(ptr++) = static_cast<unsigned char>(v);
   return reinterpret_cast<char*>(ptr);
 }
 
 void PutVarint64(std::string* dst, uint64_t v) {
+  // TED:: 64bit/7bit ~= 9.14
   char buf[10];
   char* ptr = EncodeVarint64(buf, v);
   dst->append(buf, ptr - buf);
 }
 
+// TED:: |--length (varint32 type)--|---actual value(string)|
 void PutLengthPrefixedSlice(std::string* dst, const Slice& value) {
   PutVarint32(dst, value.size());
   dst->append(value.data(), value.size());
 }
 
+
+// TED:: 查看可以拆分成多少个7bit segment.
 int VarintLength(uint64_t v) {
   int len = 1;
   while (v >= 128) {

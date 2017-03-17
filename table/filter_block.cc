@@ -22,6 +22,11 @@ FilterBlockBuilder::FilterBlockBuilder(const FilterPolicy* policy)
 void FilterBlockBuilder::StartBlock(uint64_t block_offset) {
   uint64_t filter_index = (block_offset / kFilterBase);
   assert(filter_index >= filter_offsets_.size());
+
+  // TED: by default: data block size = 4KB (see options.h)
+  // and kFilterBase = 2KB, so there will be some empty filter in the filter block.
+  // For example, when filter_index = 2, filter_offsets_.size() == 0.
+  // the GenerateFilter will be called twice.
   while (filter_index > filter_offsets_.size()) {
     GenerateFilter();
   }
@@ -58,7 +63,7 @@ void FilterBlockBuilder::GenerateFilter() {
   }
 
   // Make list of keys from flattened key structure
-  start_.push_back(keys_.size());  // Simplify length computation
+  start_.push_back(keys_.size());  // Simplify length computation - TED: sentinel for line 65:   size_t length = start_[i+1] - start_[i];
   tmp_keys_.resize(num_keys);
   for (size_t i = 0; i < num_keys; i++) {
     const char* base = keys_.data() + start_[i];

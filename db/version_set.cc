@@ -683,6 +683,7 @@ class VersionSet::Builder {
     // Add new files
     for (size_t i = 0; i < edit->new_files_.size(); i++) {
       const int level = edit->new_files_[i].first;
+      // TED:: is this using the default C++ copy constructor??
       FileMetaData* f = new FileMetaData(edit->new_files_[i].second);
       f->refs = 1;
 
