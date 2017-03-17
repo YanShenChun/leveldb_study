@@ -131,9 +131,15 @@ const char* GetVarint32PtrFallback(const char* p,
                                    const char* limit,
                                    uint32_t* value) {
   uint32_t result = 0;
+
+  // TED:: 仅需注意是little endian字节序
+  // TED:: 32bit/7bit ~= 4.57, 即编码字符串中存在5段分割
+  // TED:: 7 * (5 - 1) = 28  因为从0计数，且全闭合。
   for (uint32_t shift = 0; shift <= 28 && p < limit; shift += 7) {
     uint32_t byte = *(reinterpret_cast<const unsigned char*>(p));
     p++;
+
+    // TED:: 看最高位是否为1
     if (byte & 128) {
       // More bytes are present
       result |= ((byte & 127) << shift);
@@ -153,13 +159,19 @@ bool GetVarint32(Slice* input, uint32_t* value) {
   if (q == NULL) {
     return false;
   } else {
+    // TED:: 此处即为coding.h中原注释写的advance the slice past the parsed value
     *input = Slice(q, limit - q);
     return true;
   }
 }
 
+
+// TED:: 为何GetVarint64Ptr不能像GetVarint32Ptr一样设为inline
 const char* GetVarint64Ptr(const char* p, const char* limit, uint64_t* value) {
   uint64_t result = 0;
+
+  // TED:: 64bit/7bit ~= 9.14, 即编码字符串中存在10段分割
+  // TED:: 7 * (10 - 1) = 63  因为从0计数，且全闭合。
   for (uint32_t shift = 0; shift <= 63 && p < limit; shift += 7) {
     uint64_t byte = *(reinterpret_cast<const unsigned char*>(p));
     p++;
@@ -187,6 +199,7 @@ bool GetVarint64(Slice* input, uint64_t* value) {
   }
 }
 
+// TED:: Get_LengthPrefixed_Slice
 const char* GetLengthPrefixedSlice(const char* p, const char* limit,
                                    Slice* result) {
   uint32_t len;
