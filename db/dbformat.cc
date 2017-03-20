@@ -9,19 +9,26 @@
 
 namespace leveldb {
 
+
+// TED:: 没有命名为GetSequenceNumber. 或许是怕混淆SequenceNumber 和 seq
 static uint64_t PackSequenceAndType(uint64_t seq, ValueType t) {
   assert(seq <= kMaxSequenceNumber);
   assert(t <= kValueTypeForSeek);
-  return (seq << 8) | t;
+  return (seq << 8) | t;  // TED:: 间接说明seq只用了56位 - 最大值 2^56 - 1
 }
 
 void AppendInternalKey(std::string* result, const ParsedInternalKey& key) {
   result->append(key.user_key.data(), key.user_key.size());
+
+  // TED:: 注意PutXXX 也是append的语义
   PutFixed64(result, PackSequenceAndType(key.sequence, key.type));
 }
 
 std::string ParsedInternalKey::DebugString() const {
   char buf[50];
+
+  // TED:: leveldb大量用到C标准中的snprintf这种格式化字符串方式
+  // TED:: unsigned long long 至少是8个字节？？
   snprintf(buf, sizeof(buf), "' @ %llu : %d",
            (unsigned long long) sequence,
            int(type));
@@ -54,8 +61,11 @@ int InternalKeyComparator::Compare(const Slice& akey, const Slice& bkey) const {
   //    decreasing type (though sequence# should be enough to disambiguate)
   int r = user_comparator_->Compare(ExtractUserKey(akey), ExtractUserKey(bkey));
   if (r == 0) {
+    // TED:: manual decoding. no ExtractSequenceNumber defined in dbformat.h
     const uint64_t anum = DecodeFixed64(akey.data() + akey.size() - 8);
     const uint64_t bnum = DecodeFixed64(bkey.data() + bkey.size() - 8);
+
+    // TED:: 对于相同的user_key, sequence number越大，排在越靠前，代表值越新
     if (anum > bnum) {
       r = -1;
     } else if (anum < bnum) {
@@ -73,13 +83,19 @@ void InternalKeyComparator::FindShortestSeparator(
   Slice user_limit = ExtractUserKey(limit);
   std::string tmp(user_start.data(), user_start.size());
   user_comparator_->FindShortestSeparator(&tmp, user_limit);
+
+  // TED::注意只有当tmp确实找到了一个大于start的值
   if (tmp.size() < user_start.size() &&
       user_comparator_->Compare(user_start, tmp) < 0) {
     // User key has become shorter physically, but larger logically.
     // Tack on the earliest possible number to the shortened user key.
+
+    // TED::直接用最大的SequenceNumber表示最新
     PutFixed64(&tmp, PackSequenceAndType(kMaxSequenceNumber,kValueTypeForSeek));
     assert(this->Compare(*start, tmp) < 0);
     assert(this->Compare(tmp, limit) < 0);
+
+    // TED:: thread-safe???
     start->swap(tmp);
   }
 }

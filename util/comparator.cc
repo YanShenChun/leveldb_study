@@ -26,6 +26,8 @@ class BytewiseComparatorImpl : public Comparator {
     return a.compare(b);
   }
 
+  // TED:: 此处对于start的修改不是thread-safe.
+  // TED:: 是否有悖Comparator的comment
   virtual void FindShortestSeparator(
       std::string* start,
       const Slice& limit) const {

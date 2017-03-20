@@ -12,6 +12,8 @@ namespace leveldb {
 
 class MemTable;
 
+// TED:: leveldb best practise: pimpl idom. 精髓类似，但不是标准的pimpl
+//
 // WriteBatchInternal provides static methods for manipulating a
 // WriteBatch that we don't want in the public WriteBatch interface.
 class WriteBatchInternal {

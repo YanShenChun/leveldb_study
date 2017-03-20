@@ -13,6 +13,8 @@
 //    batch.Put("key", "v2");
 //    batch.Put("key", "v3");
 //
+
+// TED:: WriteBatch中的非const方法不是线程安全。
 // Multiple threads can invoke const methods on a WriteBatch without
 // external synchronization, but if any of the threads may call a
 // non-const method, all threads accessing the same WriteBatch must use
@@ -26,6 +28,7 @@
 
 namespace leveldb {
 
+// TED:: leveldb best practise:尽量可以前置声明
 class Slice;
 
 class WriteBatch {

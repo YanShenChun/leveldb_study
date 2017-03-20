@@ -118,6 +118,7 @@ void PutLengthPrefixedSlice(std::string* dst, const Slice& value) {
 
 
 // TED:: 查看可以拆分成多少个7bit segment.
+// TED:: 参数也可以传入uint32_t
 int VarintLength(uint64_t v) {
   int len = 1;
   while (v >= 128) {
@@ -200,6 +201,7 @@ bool GetVarint64(Slice* input, uint64_t* value) {
 }
 
 // TED:: Get_LengthPrefixed_Slice
+// TED:: 此方法未在头文件中暴露，在coding.cc中也未被引用。????
 const char* GetLengthPrefixedSlice(const char* p, const char* limit,
                                    Slice* result) {
   uint32_t len;
@@ -215,6 +217,8 @@ bool GetLengthPrefixedSlice(Slice* input, Slice* result) {
   if (GetVarint32(input, &len) &&
       input->size() >= len) {
     *result = Slice(input->data(), len);
+
+    // TED:: advance the slice past the parsed value.
     input->remove_prefix(len);
     return true;
   } else {

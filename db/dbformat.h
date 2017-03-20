@@ -62,6 +62,8 @@ static const ValueType kValueTypeForSeek = kTypeValue;
 
 typedef uint64_t SequenceNumber;
 
+// TED:: 低8位为type
+// TED:: 具体SequenceNumber的结构可以查看PackSequenceAndType函数
 // We leave eight bits empty at the bottom so a type and sequence#
 // can be packed together into 64-bits.
 static const SequenceNumber kMaxSequenceNumber =
@@ -87,12 +89,19 @@ inline size_t InternalKeyEncodingLength(const ParsedInternalKey& key) {
 extern void AppendInternalKey(std::string* result,
                               const ParsedInternalKey& key);
 
+// TED:: 看完此函数即可得出internal_key的格式
+// TED:: internal_key = user_key + valueType(8bit) + seqnumber(56bit) 
+// TED:: address        low ----------------------------> high
+
 // Attempt to parse an internal key from "internal_key".  On success,
 // stores the parsed data in "*result", and returns true.
 //
 // On error, returns false, leaves "*result" in an undefined state.
 extern bool ParseInternalKey(const Slice& internal_key,
                              ParsedInternalKey* result);
+
+// TED:: ExtractUserKey和ExtractValueType是两个针对ParseInternalKey的快捷函数。
+// TED:: 为何没有ExtractSequenceNumber()
 
 // Returns the user key portion of an internal key.
 inline Slice ExtractUserKey(const Slice& internal_key) {
@@ -110,6 +119,9 @@ inline ValueType ExtractValueType(const Slice& internal_key) {
 
 // A comparator for internal keys that uses a specified comparator for
 // the user key portion and breaks ties by decreasing sequence number.
+
+// TED:: breaks ties -> 当user_key相等时，使用sequence number来决定先后顺序
+// TED:: InternalKeyComparator使用的是装饰者模式？？
 class InternalKeyComparator : public Comparator {
  private:
   const Comparator* user_comparator_;
@@ -127,6 +139,7 @@ class InternalKeyComparator : public Comparator {
   int Compare(const InternalKey& a, const InternalKey& b) const;
 };
 
+// TED:: 未看
 // Filter policy wrapper that converts from internal keys to user keys
 class InternalFilterPolicy : public FilterPolicy {
  private:
@@ -185,6 +198,7 @@ inline bool ParseInternalKey(const Slice& internal_key,
   return (c <= static_cast<unsigned char>(kTypeValue));
 }
 
+// TED::具体含义不是很清楚
 // A helper class useful for DBImpl::Get()
 class LookupKey {
  public:

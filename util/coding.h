@@ -7,6 +7,10 @@
 // * In addition we support variable length "varint" encoding
 // * Strings are encoded prefixed by their length in varint format
 
+
+// TED:: 变长编码就是为了省空间。
+// 比如；对于无符号int32 对于[0, 2^32 - 1]内的数字，均需要4字节空间。
+// leveldb的变长编码通过7bit拆分，对于7 * 3 = 21bit以内的数字，均能节省至少一字节的空间。
 #ifndef STORAGE_LEVELDB_UTIL_CODING_H_
 #define STORAGE_LEVELDB_UTIL_CODING_H_
 
@@ -55,10 +59,13 @@ extern char* EncodeVarint64(char* dst, uint64_t value);
 // Lower-level versions of Get... that read directly from a character buffer
 // without any bounds checking.
 
+// TED:: 为何EncodeFixed32、EncodingFixed64不设置为inline
 inline uint32_t DecodeFixed32(const char* ptr) {
   if (port::kLittleEndian) {
     // Load the raw bytes
     uint32_t result;
+    // TED::注释中说的优化是指？
+    // TED::VC++也有同样优化？？
     memcpy(&result, ptr, sizeof(result));  // gcc optimizes this to a plain load
     return result;
   } else {

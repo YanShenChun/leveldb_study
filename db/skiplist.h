@@ -184,6 +184,8 @@ typename SkipList<Key,Comparator>::Node*
 SkipList<Key,Comparator>::NewNode(const Key& key, int height) {
   char* mem = arena_->AllocateAligned(
       sizeof(Node) + sizeof(port::AtomicPointer) * (height - 1));
+
+  // TED:: 传说中的placement new. 但搜索全部code 似乎并不需要#include <new>
   return new (mem) Node(key);
 }
 
