@@ -26,6 +26,9 @@ class FilterPolicy;
 //
 // The sequence of calls to FilterBlockBuilder must match the regexp:
 //      (StartBlock AddKey*)* Finish
+
+// TED::无奈这次关于filter的阅读笔记丢失了，只有重新来读了
+// TED::这段话权作为commit － 深刻教训
 class FilterBlockBuilder {
  public:
   explicit FilterBlockBuilder(const FilterPolicy*);
