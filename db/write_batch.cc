@@ -39,6 +39,8 @@ void WriteBatch::Clear() {
   rep_.resize(kHeader);
 }
 
+
+// TED:: Iterate也可以这样去用，遍历自己，然后到某一项的时候，用回调handler去使用
 Status WriteBatch::Iterate(Handler* handler) const {
   Slice input(rep_);
   if (input.size() < kHeader) {
@@ -54,6 +56,7 @@ Status WriteBatch::Iterate(Handler* handler) const {
     input.remove_prefix(1);
     switch (tag) {
       case kTypeValue:
+        // TED::　尽显slice的好处，Ｎ步操作无内存拷贝，只是数字相加减而已
         if (GetLengthPrefixedSlice(&input, &key) &&
             GetLengthPrefixedSlice(&input, &value)) {
           handler->Put(key, value);
@@ -133,6 +136,7 @@ Status WriteBatchInternal::InsertInto(const WriteBatch* b,
   return b->Iterate(&inserter);
 }
 
+// TED:: leveldb C++ STD string: append/assign
 void WriteBatchInternal::SetContents(WriteBatch* b, const Slice& contents) {
   assert(contents.size() >= kHeader);
   b->rep_.assign(contents.data(), contents.size());

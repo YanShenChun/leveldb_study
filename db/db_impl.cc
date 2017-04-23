@@ -1191,6 +1191,18 @@ Status DBImpl::Delete(const WriteOptions& options, const Slice& key) {
   return DB::Delete(options, key);
 }
 
+
+// TED::
+// TED:: 1. * http://www.cnblogs.com/ewouldblock7/p/3655127.html leveldb　 合并写详解
+// TED:: 2. http://www.cnblogs.com/KevinT/p/3813635.html leveldb源码分析　WriteBatch
+// TED:: 3. * http://blog.csdn.net/swartz2015/article/details/66970885  写的不错　图文并茂
+// TED:: 4. http://www.tuicool.com/articles/nYRveq
+// TED:: 5. http://www.aikaiyuan.com/4591.html 关键实现图解
+// TED:: 6. http://catkang.github.io/2017/01/17/leveldb-data.html 庖丁解牛
+// TED:: 7. http://www.cnblogs.com/KevinT/p/3813374.html
+// TED:: 8. http://blog.sina.com.cn/s/blog_aed82f6f0102wn77.html
+// TED:: 9. http://chuansong.me/n/455190251119
+// TED:: 10. http://blog.csdn.net/Swartz2015/article/details/67633724
 Status DBImpl::Write(const WriteOptions& options, WriteBatch* my_batch) {
   Writer w(&mutex_);
   w.batch = my_batch;
